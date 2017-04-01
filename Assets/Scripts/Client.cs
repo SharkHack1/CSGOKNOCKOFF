@@ -14,7 +14,7 @@ public class Client : NetworkBehaviour {
 
 	[SerializeField] Transform hostObj;
 
-	Hashtable profileUI = new Hashtable();
+	Dictionary<string, GameObject> profileUI = new Dictionary<string, GameObject>();
 
 
 	void Start () {
@@ -53,22 +53,22 @@ public class Client : NetworkBehaviour {
 		}
 
 		//map all the profile bar objects
-		profileUI.Add("Rank Emblem", GameObject.Find("Canvas/Profile/Profile Bar/Rank Emblem").GetComponent<Image>());
-		profileUI.Add("Username", GameObject.Find("Canvas/Profile/Profile Bar/Username").GetComponent<Text>());
-		profileUI.Add("Level", GameObject.Find("Canvas/Profile/Profile Bar/Level").GetComponent<Text>());
+		profileUI.Add("Rank Emblem", GameObject.Find("Canvas/Profile/Profile Bar/Rank Emblem"));
+		profileUI.Add("Username", GameObject.Find("Canvas/Profile/Profile Bar/Username"));
+		profileUI.Add("Level", GameObject.Find("Canvas/Profile/Profile Bar/Level"));
 		
 		//general profile objects
-		profileUI.Add("CurrentExp", GameObject.Find("Canvas/Profile/CurrentExp").GetComponent<Text>());
-		profileUI.Add("ProgressBar", GameObject.Find("Canvas/Profile/ProgressBarBackground/ProgressBar").GetComponent<RectTransform>());
-		profileUI.Add("RequiredExp", GameObject.Find("Canvas/Profile/RequiredExp").GetComponent<Text>());
-		profileUI.Add("Vlads", GameObject.Find("Canvas/Profile/Vlads").GetComponent<Text>());
+		profileUI.Add("CurrentExp", GameObject.Find("Canvas/Profile/CurrentExp"));
+		profileUI.Add("ProgressBar", GameObject.Find("Canvas/Profile/ProgressBarBackground/ProgressBar"));
+		profileUI.Add("RequiredExp", GameObject.Find("Canvas/Profile/RequiredExp"));
+		profileUI.Add("Vlads", GameObject.Find("Canvas/Profile/Vlads"));
 
 		//Change the text to be correct
-		profileUI["Username"] = username;
+		profileUI["Username"].GetComponent<Text>().text = username;
 		//TODO: Work on later
-		profileUI["Level"] = "Lvl: ";
+		profileUI["Level"].GetComponent<Text>().text = "Lvl: ";
 
-		profileUI["Vlads"] = vlads + " vlads";
+		profileUI["Vlads"].GetComponent<Text>().text = vlads + " vlads";
 
 	}
 
@@ -76,6 +76,7 @@ public class Client : NetworkBehaviour {
 		totalVladsEarned += value; //add to the total amount gained from betting
 
 		PlayerPrefs.SetInt("vlads", value); //save vlads value in PlayerPrefs
+		profileUI["Vlads"].GetComponent<Text>().text = vlads + " vlads";
 	}
 
 	public int Vlads {
