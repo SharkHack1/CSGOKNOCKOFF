@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class Client : NetworkBehaviour {
 
@@ -13,7 +14,7 @@ public class Client : NetworkBehaviour {
 
 	[SerializeField] Transform hostObj;
 
-	Dictionary<string,RectTransform> profileUI = new Dictionary<string, RectTransform>();
+	Hashtable profileUI = new Hashtable();
 
 
 	void Start () {
@@ -21,6 +22,10 @@ public class Client : NetworkBehaviour {
 			Instantiate(hostObj);
 		}
 	}	
+
+	void Update () {
+
+	}
 
 	public override void OnStartLocalPlayer () {
 		transform.tag = "LocalPlayer";
@@ -47,12 +52,23 @@ public class Client : NetworkBehaviour {
 			PlayerPrefs.SetInt("totalvladsearned", 0);
 		}
 
-		//map all the profile ui objects
-		profileUI.Add("Profile Bar", GameObject.Find("Canvas/Profile/Profile Bar").GetComponent<RectTransform>());
-		profileUI.Add("Rank Emblem", GameObject.Find("Canvas/Profile/Profile Bar/Rank Emblem").GetComponent<RectTransform>());
-		profileUI.Add("Username", GameObject.Find("Canvas/Profile/Profile Bar/Username").GetComponent<RectTransform>());
-		profileUI.Add("Level", GameObject.Find("Canvas/Profile/Profile Bar/Level").GetComponent<RectTransform>());
+		//map all the profile bar objects
+		profileUI.Add("Rank Emblem", GameObject.Find("Canvas/Profile/Profile Bar/Rank Emblem").GetComponent<Image>());
+		profileUI.Add("Username", GameObject.Find("Canvas/Profile/Profile Bar/Username").GetComponent<Text>());
+		profileUI.Add("Level", GameObject.Find("Canvas/Profile/Profile Bar/Level").GetComponent<Text>());
 		
+		//general profile objects
+		profileUI.Add("CurrentExp", GameObject.Find("Canvas/Profile/CurrentExp").GetComponent<Text>());
+		profileUI.Add("ProgressBar", GameObject.Find("Canvas/Profile/ProgressBarBackground/ProgressBar").GetComponent<RectTransform>());
+		profileUI.Add("RequiredExp", GameObject.Find("Canvas/Profile/RequiredExp").GetComponent<Text>());
+		profileUI.Add("Vlads", GameObject.Find("Canvas/Profile/Vlads").GetComponent<Text>());
+
+		//Change the text to be correct
+		profileUI["Username"] = username;
+		//TODO: Work on later
+		profileUI["Level"] = "Lvl: ";
+
+		profileUI["Vlads"] = vlads + " vlads";
 
 	}
 
