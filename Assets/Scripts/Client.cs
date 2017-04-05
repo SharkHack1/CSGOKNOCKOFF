@@ -23,10 +23,6 @@ public class Client : NetworkBehaviour {
 		}
 	}	
 
-	void Update () {
-
-	}
-
 	public override void OnStartLocalPlayer () {
 		transform.tag = "LocalPlayer";
 
@@ -61,14 +57,14 @@ public class Client : NetworkBehaviour {
 		profileUI.Add("CurrentExp", GameObject.Find("Canvas/Profile/CurrentExp"));
 		profileUI.Add("ProgressBar", GameObject.Find("Canvas/Profile/ProgressBarBackground/ProgressBar"));
 		profileUI.Add("RequiredExp", GameObject.Find("Canvas/Profile/RequiredExp"));
-		profileUI.Add("Vlads", GameObject.Find("Canvas/Profile/Vlads"));
+		profileUI.Add("Vlads", GameObject.Find("Canvas/Profile/Vlads Panel/Vlads"));
 
 		//Change the text to be correct
 		profileUI["Username"].GetComponent<Text>().text = username;
 		//TODO: Work on later
 		profileUI["Level"].GetComponent<Text>().text = "Lvl: ";
 
-		profileUI["Vlads"].GetComponent<Text>().text = vlads + " vlads";
+		profileUI["Vlads"].GetComponent<Text>().text = Vlads + " vlads";
 
 	}
 
@@ -76,7 +72,7 @@ public class Client : NetworkBehaviour {
 		totalVladsEarned += value; //add to the total amount gained from betting
 
 		PlayerPrefs.SetInt("vlads", value); //save vlads value in PlayerPrefs
-		profileUI["Vlads"].GetComponent<Text>().text = vlads + " vlads";
+		profileUI["Vlads"].GetComponent<Text>().text = Vlads + " vlads";
 	}
 
 	public int Vlads {

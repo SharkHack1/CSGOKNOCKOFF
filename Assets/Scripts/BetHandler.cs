@@ -28,6 +28,7 @@ public class BetHandler : MonoBehaviour {
 		}
 
 		int.TryParse(betField.text, out bet);
+		RoundBet();
 	}
 	
 	public void DoubleBet () {
@@ -78,5 +79,10 @@ public class BetHandler : MonoBehaviour {
 
 			playerInfo.Vlads -= bet;
 		}
+	}
+
+	public void RoundBet () {
+		//clamps bet between minBet and the player's Vlads count
+		betField.text = Mathf.Clamp(bet, minBet, player.GetComponent<Client>().Vlads).ToString();
 	}
 }
