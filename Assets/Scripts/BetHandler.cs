@@ -27,8 +27,7 @@ public class BetHandler : MonoBehaviour {
 			return;
 		}
 
-		int.TryParse(betField.text, out bet);
-		RoundBet();
+		bet = int.Parse(betField.text);
 	}
 	
 	public void DoubleBet () {
