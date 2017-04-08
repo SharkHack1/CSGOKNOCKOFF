@@ -19,7 +19,6 @@ public class BetHandler : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		betField = transform.FindChild("BetField").GetComponent<InputField>();
-		betField.text = minBet.ToString(); //set bet to the minimum
 		disabledPanel = transform.FindChild("DisabledOverlay").gameObject;
 		withdrawPanel = transform.FindChild("Withdraw Panel").gameObject;
 		withdrawButtonText = withdrawPanel.transform.FindChild("Withdraw Bet Button/Text").GetComponent<Text>();

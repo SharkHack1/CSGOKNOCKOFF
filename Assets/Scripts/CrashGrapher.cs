@@ -33,14 +33,13 @@ public class CrashGrapher : NetworkBehaviour {
 
 		//set up crash vars
 		crashFraction = new int[2];
-		crashFraction[0] = 5;
-		crashFraction[1] = 100;
+		crashFraction[0] = 1;
+		crashFraction[1] = 5;
 
 		rnd = new System.Random(seed.GetHashCode());
 
 		//Set-up chance to crash on startup
 		if (crashFraction[0] >= rnd.Next(1, crashFraction[1])) {
-			crashed = true;
 			StartCoroutine(Crash());
 		}
 	}
@@ -52,9 +51,8 @@ public class CrashGrapher : NetworkBehaviour {
 		}
 		
 		if (willCrash) {
-			if (crashFraction[0] >= rnd.Next(1, crashFraction[1])) {
-				//graph crashed
-				crashed = true;
+			//multiply the denomenator for more random crash values
+			if (crashFraction[0] >= rnd.Next(1, crashFraction[1]*10)) {
 				StartCoroutine(Crash());
 			}
 		}
@@ -71,17 +69,6 @@ public class CrashGrapher : NetworkBehaviour {
 					lr.numPositions++;
 					lr.SetPosition(i, GetPointPosition(i));
 					lr.SetPosition(i+1, GetPointPosition(timeElapsed));
-
-					//handle crash stuff
-
-					//the numerator increases 1 and denominator increases 2
-					crashFraction[0]++;
-					crashFraction[1] += 2;
-
-					if (crashFraction[0] <= rnd.Next(1, crashFraction[1])) {
-						willCrash = true;
-					}
-
 				} else {
 					lr.SetPosition(i, GetPointPosition(timeElapsed));
 				}
@@ -124,14 +111,40 @@ public class CrashGrapher : NetworkBehaviour {
 		return point;
 	}
 
+	public void CheckCrash () {
+		//handle crash stuff
+		if (MultiplierMarker.numMarkers >= 10) {
+			//handle crash stuff
+
+			//the numerator increases 1 and denominator increases 2
+			crashFraction[0]++;
+			crashFraction[1] += 2;
+
+			if (crashFraction[0] >= rnd.Next(1, crashFraction[1])) {
+				willCrash = true;
+			}
+		}
+	}
+
 	IEnumerator Crash () {
+		//change bool values
+		willCrash = true;
+		crashed = true;
+
+		//crash entries
+		BetEntryUtility.OnCrash();
+
 		//destroy multiplier spawner and seconds spawner
 		foreach (Spawner s in GameObject.Find("Canvas/Graph").GetComponentsInChildren<Spawner>()) {
-			Destroy(s);
+			Destroy(s.gameObject);
 		}
 
+		//hide arrow
+		arrow.gameObject.SetActive(false);
+
 		//handle rest of crash stuff
-		lr.gameObject.SetActive(false);
+		lr.enabled = false;
+		BetHandler.DisableBetting();
 
 		//count down until 0
 		float timeTillRoundStart = 5f;
@@ -143,11 +156,8 @@ public class CrashGrapher : NetworkBehaviour {
 			yield return null;
 		}
 
+		//prepare for next round
 		BetHandler.ResetBetPanel();
-
-		if (isServer) {
-			FindObjectOfType<Host>().InstantiateRoundCoroutine();
-		}
+		Destroy(this.gameObject);
 	}
-
 }

@@ -50,5 +50,11 @@ public class SecondsMarker : NetworkBehaviour {
 		return graphLegnth/numMarkers;
 	}
 
+	public static void ResetValues () {
+		numMarkers = new int();
+		numActiveMarkers = new int();
+		distance = new int();
+		secondsBase = 1;
+	}
 
 }

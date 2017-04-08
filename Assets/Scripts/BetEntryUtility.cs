@@ -12,6 +12,8 @@ public class BetEntryUtility : NetworkBehaviour {
 	static RectTransform et;
 	static RectTransform ct;
 
+	static BetEntryUtility instance;
+
 	static Dictionary<int, RectTransform> entries = new Dictionary<int, RectTransform>();
 	static int numEntries;
 
@@ -19,6 +21,8 @@ public class BetEntryUtility : NetworkBehaviour {
 	void Awake () {
 		et = entryTemplate;
 		ct = container;
+
+		instance = this;
 	}
 
 	public static int CreateEntry (string Username, int bet) {
@@ -60,6 +64,38 @@ public class BetEntryUtility : NetworkBehaviour {
 
 		//change color of panel
 		ChangePanelColor(entry, new Color32(0, 250, 0, 150));
+	}
+
+	public static void OnCrash () {
+		//loop through each entry to deal with it
+		for (int i = 0; i < numEntries; i++) {
+			//get values from dictionary
+			RectTransform entry = entries[i];
+			Text[] entryText = getTextArrayFromEntry(entry);
+
+			//check if entry has been withdrawn, if so change the color of it
+			if (entryText[1].text == "-" || entryText[3].text == "--") {
+				//entry has not been withdrawn
+				ChangePanelColor(entry, new Color32 (250, 0, 0, 150));
+			}
+		}
+
+		//reset entries after delay (5f)
+		instance.Invoke("ResetEntries", 5f);
+	}
+
+	void ResetEntries () {
+		//destroy all instances of entryBet
+		for (int i = 0; i < numEntries; i++) {
+			Destroy (entries[i].gameObject);
+		}
+
+		//clear dictionary
+		entries = new Dictionary<int, RectTransform>();
+		numEntries = 0;
+
+		// resize container
+		ct.sizeDelta = new Vector2 (340, 0);
 	}
 
 	public static void ChangePanelColor (RectTransform entry, Color32 c) {

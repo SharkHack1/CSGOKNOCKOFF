@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class MultiplierMarker : NetworkBehaviour {
 
 	const float graphHeight = 450;
-	static int numMarkers;
+	public static int numMarkers;
 	static int numActiveMarkers;
 	static float distance;
 	RectTransform rectTransform;
@@ -27,6 +27,9 @@ public class MultiplierMarker : NetworkBehaviour {
 		}
 		GetComponentInChildren<Text>().text = (multiplier+1) + "x";
 		rectTransform = GetComponent<RectTransform>();
+
+		//set a chance for the graph to crash
+		FindObjectOfType<CrashGrapher>().CheckCrash();
 	}
 
 	void Update () {
@@ -51,6 +54,13 @@ public class MultiplierMarker : NetworkBehaviour {
 	public static float getLerpedDistance () {
 		distance = Mathf.Lerp(distance, getUnlerpedDistance(), Time.deltaTime);
 		return distance;
+	}
+	
+	public static void ResetValues () {
+		numMarkers = new int();
+		numActiveMarkers = new int();
+		distance = new int();
+		multiplierBase = 1;
 	}
 
 }
