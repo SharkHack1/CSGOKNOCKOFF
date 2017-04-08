@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class Client : NetworkBehaviour {
 
-	public string username;
+	string username;
 	int vlads;
 	int totalVladsEarned;
 
@@ -38,15 +38,18 @@ public class Client : NetworkBehaviour {
 			name = name.Replace("=", "");
 			name = name.Replace("+", "");
 
-			username = name;
-			PlayerPrefs.SetString("username", name);
+			//Username also auto save, so no need to call PlayerPrefs
+			Username = name;
 
 			//vlads auto save, so no need to call PlayerPrefs
-			vlads = startingVlads;
+			Vlads = startingVlads;
 
 			//total vlads earned
 			PlayerPrefs.SetInt("totalvladsearned", 0);
 		}
+
+		//clear all ui mappings
+		profileUI = new Dictionary<string, GameObject>();
 
 		//map all the profile bar objects
 		profileUI.Add("Rank Emblem", GameObject.Find("Canvas/Profile/Profile Bar/Rank Emblem"));
@@ -60,7 +63,7 @@ public class Client : NetworkBehaviour {
 		profileUI.Add("Vlads", GameObject.Find("Canvas/Profile/Vlads Panel/Vlads"));
 
 		//Change the text to be correct
-		profileUI["Username"].GetComponent<Text>().text = username;
+		profileUI["Username"].GetComponent<Text>().text = Username;
 		//TODO: Work on later
 		profileUI["Level"].GetComponent<Text>().text = "Lvl: ";
 
@@ -73,6 +76,15 @@ public class Client : NetworkBehaviour {
 
 		PlayerPrefs.SetInt("vlads", value); //save vlads value in PlayerPrefs
 		profileUI["Vlads"].GetComponent<Text>().text = Vlads + " vlads";
+	}
+
+	public string Username {
+		get {return username;}
+		set {
+			PlayerPrefs.SetString("username", value);
+			profileUI["Username"].GetComponent<Text>().text = value;
+			username = value;
+		}
 	}
 
 	public int Vlads {

@@ -74,7 +74,7 @@ public class BetHandler : MonoBehaviour {
 			//disabledPanel.SetActive(true);
 
 			//handle bet
-			BetEntryUtility.CreateEntry(playerInfo.username, bet);
+			BetEntryUtility.CreateEntry(playerInfo.Username, bet);
 
 			playerInfo.Vlads -= bet;
 		}
