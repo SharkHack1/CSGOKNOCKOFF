@@ -12,9 +12,12 @@ public class CrashGrapher : NetworkBehaviour {
 	[SerializeField] Vector3 OriginOffset;
 	[SerializeField] float graphStartY;
 	[SyncVar] public string seed = "Ruski Spy";
-	public float multiplier;
+	public static float multiplier;
 	public float timeElapsed;
-	public float crashMulitplier;
+	int[] crashFraction;
+	System.Random rnd;
+	[SerializeField] bool willCrash = false;
+	[SerializeField] bool crashed = false;
 	[SerializeField] float crashLimit;
 
 	//Graph Formula y = (.1x)^2+1
@@ -28,15 +31,34 @@ public class CrashGrapher : NetworkBehaviour {
 		graphDisplay = GameObject.Find("Canvas/Graph/Multiplier").GetComponent<Text>();
 		arrow = transform.FindChild("arrow");
 
-		//TODO: Make it have a chance to crash every frame
-		//Generate Crash Value (out of 1 million)
-		Random.InitState(seed.GetHashCode());
-		crashMulitplier = Random.Range(1f, crashLimit);
+		//set up crash vars
+		crashFraction = new int[2];
+		crashFraction[0] = 5;
+		crashFraction[1] = 100;
+
+		rnd = new System.Random(seed.GetHashCode());
+
+		//Set-up chance to crash on startup
+		if (crashFraction[0] >= rnd.Next(1, crashFraction[1])) {
+			crashed = true;
+			StartCoroutine(Crash());
+		}
 	}
 	
 	// Update is called once per frame
 	void Update () {
+		if (crashed) {
+			return;
+		}
 		
+		if (willCrash) {
+			if (crashFraction[0] >= rnd.Next(1, crashFraction[1])) {
+				//graph crashed
+				crashed = true;
+				StartCoroutine(Crash());
+			}
+		}
+
 		//update time
 		timeElapsed += Time.deltaTime;
 
@@ -45,9 +67,21 @@ public class CrashGrapher : NetworkBehaviour {
 		for (int i = 1; i < lr.numPositions; i++) {
 			if (i == lr.numPositions-1) {
 				if (timeElapsed >= lr.numPositions) {
+					//new point
 					lr.numPositions++;
 					lr.SetPosition(i, GetPointPosition(i));
 					lr.SetPosition(i+1, GetPointPosition(timeElapsed));
+
+					//handle crash stuff
+
+					//the numerator increases 1 and denominator increases 2
+					crashFraction[0]++;
+					crashFraction[1] += 2;
+
+					if (crashFraction[0] <= rnd.Next(1, crashFraction[1])) {
+						willCrash = true;
+					}
+
 				} else {
 					lr.SetPosition(i, GetPointPosition(timeElapsed));
 				}
@@ -67,7 +101,8 @@ public class CrashGrapher : NetworkBehaviour {
 		}
 
 		//display multiplier
-		graphDisplay.text = string.Format("{0:0.00}", System.Math.Round(Mathf.Pow(.1f*timeElapsed, 2)+1, 2)) + "x";
+		multiplier = Mathf.Pow(.1f*timeElapsed, 2)+1;
+		graphDisplay.text = string.Format("{0:0.00}", multiplier) + "x";
 	}
 
 	Vector3 GetPointPosition (float i) {
@@ -87,6 +122,32 @@ public class CrashGrapher : NetworkBehaviour {
 		point /= 100;
 
 		return point;
+	}
+
+	IEnumerator Crash () {
+		//destroy multiplier spawner and seconds spawner
+		foreach (Spawner s in GameObject.Find("Canvas/Graph").GetComponentsInChildren<Spawner>()) {
+			Destroy(s);
+		}
+
+		//handle rest of crash stuff
+		lr.gameObject.SetActive(false);
+
+		//count down until 0
+		float timeTillRoundStart = 5f;
+		
+		while (timeTillRoundStart > 0) {
+			timeTillRoundStart -= Time.deltaTime;
+			graphDisplay.text = "Crashed @ " + string.Format("{0:0.00}", multiplier) + "x\n" +
+			 string.Format("{0:0.00}", timeTillRoundStart) + "s until next round...";
+			yield return null;
+		}
+
+		BetHandler.ResetBetPanel();
+
+		if (isServer) {
+			FindObjectOfType<Host>().InstantiateRoundCoroutine();
+		}
 	}
 
 }

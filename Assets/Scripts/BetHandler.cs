@@ -7,15 +7,22 @@ public class BetHandler : MonoBehaviour {
 
 	[SerializeField] int minBet;
 	int bet;
+	static bool allowWithdraw;
+	int betEntryIndex;
 
 	GameObject player;
 	InputField betField;
-	GameObject disabledPanel;
+	static GameObject disabledPanel;
+	static GameObject withdrawPanel;
+	static Text withdrawButtonText;
 
 	// Use this for initialization
 	void Start () {
 		betField = transform.FindChild("BetField").GetComponent<InputField>();
+		betField.text = minBet.ToString(); //set bet to the minimum
 		disabledPanel = transform.FindChild("DisabledOverlay").gameObject;
+		withdrawPanel = transform.FindChild("Withdraw Panel").gameObject;
+		withdrawButtonText = withdrawPanel.transform.FindChild("Withdraw Bet Button/Text").GetComponent<Text>();
 
 		betField.text = "0";
 	}
@@ -24,6 +31,10 @@ public class BetHandler : MonoBehaviour {
 	void Update () {
 		if (player == null) {
 			player = GameObject.FindGameObjectWithTag("LocalPlayer");
+			return;
+		} else if (withdrawPanel.activeInHierarchy) {
+			//do stuff for withdraw
+			withdrawButtonText.text = "Cashout @ " + string.Format("{0:0.00}", CrashGrapher.multiplier) + "x";
 			return;
 		}
 
@@ -68,16 +79,44 @@ public class BetHandler : MonoBehaviour {
 		}
 
 		//make sure bet is valid
-
 		Client playerInfo = player.GetComponent<Client>();
-		if (bet <= playerInfo.Vlads && bet >= minBet) {
-			//disabledPanel.SetActive(true);
+		if (bet <= playerInfo.Vlads) {
+			disabledPanel.SetActive(true);
 
 			//handle bet
-			BetEntryUtility.CreateEntry(playerInfo.Username, bet);
+			betEntryIndex = BetEntryUtility.CreateEntry(playerInfo.Username, bet);
+			allowWithdraw = true;
 
 			playerInfo.Vlads -= bet;
 		}
+	}
+
+	public void WithdrawBet () {
+		BetEntryUtility.WithdrawEntry(betEntryIndex, bet, CrashGrapher.multiplier);
+		
+		//change add profit to vlads
+		Client playerInfo = player.GetComponent<Client>();
+		playerInfo.Vlads += Mathf.RoundToInt(bet * CrashGrapher.multiplier);
+	}
+
+	public static void DisableBetting () {
+		disabledPanel.SetActive(true);
+	}
+
+	public static void EnableWithdraw () {
+		if (!allowWithdraw) {
+			return;
+		}
+		allowWithdraw = false; //disable withdraw for next round
+
+		disabledPanel.SetActive(false);
+		withdrawPanel.SetActive(true);
+
+	}
+
+	public static void ResetBetPanel () {
+		disabledPanel.SetActive(false);
+		withdrawPanel.SetActive(false);
 	}
 
 	public void RoundBet () {

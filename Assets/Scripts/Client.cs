@@ -6,9 +6,9 @@ using UnityEngine.UI;
 
 public class Client : NetworkBehaviour {
 
-	string username;
-	int vlads;
-	int totalVladsEarned;
+	[SerializeField] string username;
+	[SerializeField] int vlads;
+	[SerializeField] int totalVladsEarned;
 
 	private const int startingVlads = 100;
 
@@ -18,7 +18,8 @@ public class Client : NetworkBehaviour {
 
 
 	void Start () {
-		if (true) {
+		//change to true for debugging
+		if (isServer) {
 			Instantiate(hostObj);
 		}
 	}	
@@ -75,7 +76,7 @@ public class Client : NetworkBehaviour {
 		totalVladsEarned += value; //add to the total amount gained from betting
 
 		PlayerPrefs.SetInt("vlads", value); //save vlads value in PlayerPrefs
-		profileUI["Vlads"].GetComponent<Text>().text = Vlads + " vlads";
+		profileUI["Vlads"].GetComponent<Text>().text = vlads + " vlads";
 	}
 
 	public string Username {
@@ -90,8 +91,8 @@ public class Client : NetworkBehaviour {
 	public int Vlads {
 		get {return vlads;}
 		set {
-			OnVladsChanged(value);
 			vlads = value;
+			OnVladsChanged(value);
 		}
 	}
 
