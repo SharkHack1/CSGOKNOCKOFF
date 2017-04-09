@@ -22,8 +22,6 @@ public class BetHandler : MonoBehaviour {
 		disabledPanel = transform.FindChild("DisabledOverlay").gameObject;
 		withdrawPanel = transform.FindChild("Withdraw Panel").gameObject;
 		withdrawButtonText = withdrawPanel.transform.FindChild("Withdraw Bet Button/Text").GetComponent<Text>();
-
-		betField.text = "0";
 	}
 
 	// Update is called every frame
