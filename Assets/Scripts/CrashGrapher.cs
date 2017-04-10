@@ -39,7 +39,7 @@ public class CrashGrapher : NetworkBehaviour {
 		rnd = new System.Random(seed.GetHashCode());
 
 		//Set-up chance to crash on startup
-		if (crashFraction[0] >= rnd.Next(1, crashFraction[1])) {
+		if (crashFraction[0] >= rnd.Next(1, crashFraction[1]^2)) { //square denominator for lower crash on start chance
 			StartCoroutine(Crash());
 		}
 	}
@@ -51,8 +51,8 @@ public class CrashGrapher : NetworkBehaviour {
 		}
 		
 		if (willCrash) {
-			//multiply the denomenator for more random crash values
-			if (crashFraction[0] >= rnd.Next(1, crashFraction[1]*10)) {
+			//square the denomenator for more random crash values
+			if (crashFraction[0] >= rnd.Next(1, crashFraction[1]^2)) {
 				StartCoroutine(Crash());
 			}
 		}

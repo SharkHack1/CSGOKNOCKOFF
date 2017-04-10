@@ -52,10 +52,12 @@ public class Host : NetworkBehaviour {
 			//instantiate marker spawners
 			RectTransform sms = Instantiate(SecondsMakerSpawner);
 			sms.SetParent(GameObject.Find("Canvas/Graph").transform);
-			sms.localPosition = Vector3.zero;
+			sms.anchoredPosition3D = Vector3.zero;
+			sms.localScale = Vector3.one;
 			RectTransform mms = Instantiate(MultiplierMarkerSpawner);
 			mms.SetParent(GameObject.Find("Canvas/Graph").transform);
-			mms.localPosition = Vector3.zero;
+			mms.anchoredPosition3D = Vector3.zero;
+			mms.localScale = Vector3.one;
 
 			//instantiate crash arrow
 			Transform cr = Instantiate(CrashArrow);
