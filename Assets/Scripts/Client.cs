@@ -36,10 +36,7 @@ namespace com.epicface.vodkabets.networking {
 				totalVladsEarned = PlayerPrefs.GetInt("totalvladsearned");
 			} else {
 				//Generate Random Username
-				System.Guid guid = System.Guid.NewGuid();
-				string name = System.Convert.ToBase64String(guid.ToByteArray());
-				name = name.Replace("=", "");
-				name = name.Replace("+", "");
+				name = RandomHashUtil.GenerateHash();
 
 				//Username also auto save, so no need to call PlayerPrefs
 				Username = name;

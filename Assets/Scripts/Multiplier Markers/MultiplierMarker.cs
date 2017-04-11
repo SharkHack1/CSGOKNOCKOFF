@@ -27,11 +27,9 @@ namespace com.epicface.vodkabets.crash.markers {
 			if (numActiveMarkers >= 4) {
 				multiplierBase *= 5;
 			}
+			
 			GetComponentInChildren<Text>().text = (multiplier+1) + "x";
 			rectTransform = GetComponent<RectTransform>();
-
-			//set a chance for the graph to crash
-			FindObjectOfType<CrashGrapher>().CheckCrash();
 		}
 
 		void Update () {

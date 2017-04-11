@@ -20,14 +20,6 @@ namespace com.epicface.vodkabets.networking {
 			StartCoroutine(GameLoop());
 		}
 
-		string GenerateSeed () {
-			System.Guid guid = System.Guid.NewGuid();
-			string hash = System.Convert.ToBase64String(guid.ToByteArray());
-			hash = hash.Replace("=", "");
-			hash = hash.Replace("+", "");
-			return hash;
-		}
-
 		IEnumerator GameLoop () {
 
 			//forever loop unless game is stopped
@@ -47,7 +39,7 @@ namespace com.epicface.vodkabets.networking {
 				CrashBetHandler.EnableWithdraw();
 				
 				//start the round
-				string gameSeed = GenerateSeed();
+				string gameSeed = RandomHashUtil.GenerateHash();
 
 				//reset marker values
 				SecondsMarker.ResetValues();

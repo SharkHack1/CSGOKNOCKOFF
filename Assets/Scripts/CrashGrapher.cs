@@ -17,11 +17,11 @@ namespace com.epicface.vodkabets.crash {
 		[SyncVar] public string seed = "Ruski Spy";
 		public static float multiplier;
 		public float timeElapsed;
-		int[] crashFraction;
-		System.Random rnd;
-		[SerializeField] bool willCrash = false;
-		[SerializeField] bool crashed = false;
-		[SerializeField] float crashLimit;
+		public bool crashed;
+		public float crashMultiplier;
+		[SerializeField] TextAsset crashValues;
+		[SerializeField] int omittedLines;
+		static Condition[] crashValueChooserConditions;
 
 		//Graph Formula y = (.1x)^2+1
 		//y = multiplier
@@ -34,30 +34,41 @@ namespace com.epicface.vodkabets.crash {
 			graphDisplay = GameObject.Find("Canvas/Graph/Multiplier").GetComponent<Text>();
 			arrow = transform.FindChild("arrow");
 
-			//set up crash vars
-			crashFraction = new int[2];
-			crashFraction[0] = 1;
-			crashFraction[1] = 5;
+			//generate random crash float
 
-			rnd = new System.Random(seed.GetHashCode());
+			//get date from file if needed
+			if (crashValueChooserConditions == null) {
+				string[] lines = crashValues.text.Split(new char[] {'\n'}, System.StringSplitOptions.RemoveEmptyEntries);
 
-			//Set-up chance to crash on startup
-			if (crashFraction[0] >= rnd.Next(1, crashFraction[1]^2)) { //square denominator for lower crash on start chance
+				crashValueChooserConditions = new Condition[lines.Length-omittedLines];
+				for (int i = 0; i < lines.Length-omittedLines; i++) {
+					string[] condition = lines[i+omittedLines].Split(',');
+					//add values to condition array
+					crashValueChooserConditions[i].min = float.Parse(condition[0]);
+					crashValueChooserConditions[i].max = float.Parse(condition[1]);
+					crashValueChooserConditions[i].precent = int.Parse(condition[2]);
+				}
+				
+			}
+
+			crashMultiplier = RNGUtil.GenerateWeightedCrashPoint(crashValueChooserConditions, seed);
+
+			if (crashMultiplier == 0f) {
+				crashed = true;
 				StartCoroutine(Crash());
 			}
 		}
 		
 		// Update is called once per frame
 		void Update () {
+			//check if crashed
 			if (crashed) {
 				return;
 			}
-			
-			if (willCrash) {
-				//square the denomenator for more random crash values
-				if (crashFraction[0] >= rnd.Next(1, crashFraction[1]^2)) {
-					StartCoroutine(Crash());
-				}
+
+			if (multiplier >= crashMultiplier) {
+				crashed = true;
+				StartCoroutine(Crash());
 			}
 
 			//update time
@@ -114,25 +125,7 @@ namespace com.epicface.vodkabets.crash {
 			return point;
 		}
 
-		public void CheckCrash () {
-			//handle crash stuff
-			if (MultiplierMarker.numMarkers >= 10) {
-				//handle crash stuff
-
-				//the numerator increases 1 and denominator increases 2
-				crashFraction[0]++;
-				crashFraction[1] += 2;
-
-				if (crashFraction[0] >= rnd.Next(1, crashFraction[1])) {
-					willCrash = true;
-				}
-			}
-		}
-
 		IEnumerator Crash () {
-			//change bool values
-			willCrash = true;
-			crashed = true;
 
 			//crash entries
 			CrashBetEntryUtility.OnCrash();
