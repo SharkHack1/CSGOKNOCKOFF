@@ -1,50 +1,55 @@
-﻿using System.Collections;
+﻿using com.epicface.vodkabets.networking;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class UserSettings : MonoBehaviour {
-	
-    [SerializeField] GameObject[] settingFields;
-    Client player;
+namespace com.epicface.vodkabets.ui {
 
-    void Update () {
-        //force loop until client found
-        if (player == null) {
-			GameObject go = GameObject.FindGameObjectWithTag("LocalPlayer");
-            if (go != null) {
-                player = go.GetComponent<Client>();
+    public class UserSettings : MonoBehaviour {
+        
+        [SerializeField] GameObject[] settingFields;
+        Client player;
+
+        void Update () {
+            //force loop until client found
+            if (player == null) {
+                GameObject go = GameObject.FindGameObjectWithTag("LocalPlayer");
+                if (go != null) {
+                    player = go.GetComponent<Client>();
+                }
+                return;
             }
-			return;
-		}
-    }
-
-    public void ResetAccount () {
-        if (player == null) {
-            return;
         }
 
-        PlayerPrefs.DeleteAll();
-        player.OnStartLocalPlayer();
-    }
+        public void ResetAccount () {
+            if (player == null) {
+                return;
+            }
 
-    public void SaveChanges () {
-        if (player == null) {
-            return;
+            PlayerPrefs.DeleteAll();
+            player.OnStartLocalPlayer();
         }
 
-        if (string.IsNullOrEmpty(settingFields[0].GetComponent<InputField>().text)) {
-            //Generate Random Username
-			System.Guid guid = System.Guid.NewGuid();
-			string name = System.Convert.ToBase64String(guid.ToByteArray());
-			name = name.Replace("=", "");
-			name = name.Replace("+", "");
+        public void SaveChanges () {
+            if (player == null) {
+                return;
+            }
 
-            player.Username = name;
-        } else {
-            player.Username = settingFields[0].GetComponent<InputField>().text;
+            if (string.IsNullOrEmpty(settingFields[0].GetComponent<InputField>().text)) {
+                //Generate Random Username
+                System.Guid guid = System.Guid.NewGuid();
+                string name = System.Convert.ToBase64String(guid.ToByteArray());
+                name = name.Replace("=", "");
+                name = name.Replace("+", "");
+
+                player.Username = name;
+            } else {
+                player.Username = settingFields[0].GetComponent<InputField>().text;
+            }
         }
+
     }
 
 }

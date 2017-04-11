@@ -4,63 +4,67 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class MultiplierMarker : NetworkBehaviour {
+namespace com.epicface.vodkabets.crash.markers {
 
-	const float graphHeight = 450;
-	public static int numMarkers;
-	static int numActiveMarkers;
-	static float distance;
-	RectTransform rectTransform;
-	int multiplier;
-	static int multiplierBase = 1;
+	public class MultiplierMarker : NetworkBehaviour {
 
-	void Start () {
-		numMarkers++;
-		numActiveMarkers++;
-		multiplier = numMarkers;
+		const float graphHeight = 450;
+		public static int numMarkers;
+		static int numActiveMarkers;
+		static float distance;
+		RectTransform rectTransform;
+		int multiplier;
+		static int multiplierBase = 1;
 
-		transform.localPosition = Vector3.zero;
+		void Start () {
+			numMarkers++;
+			numActiveMarkers++;
+			multiplier = numMarkers;
 
-		//Up the base by 10 when there are too many markers
-		if (numActiveMarkers >= 4) {
-			multiplierBase *= 5;
-		}
-		GetComponentInChildren<Text>().text = (multiplier+1) + "x";
-		rectTransform = GetComponent<RectTransform>();
+			transform.localPosition = Vector3.zero;
 
-		//set a chance for the graph to crash
-		FindObjectOfType<CrashGrapher>().CheckCrash();
-	}
+			//Up the base by 10 when there are too many markers
+			if (numActiveMarkers >= 4) {
+				multiplierBase *= 5;
+			}
+			GetComponentInChildren<Text>().text = (multiplier+1) + "x";
+			rectTransform = GetComponent<RectTransform>();
 
-	void Update () {
-		if (multiplier % multiplierBase != 0) {
-			Destroy(this.gameObject);
-			numActiveMarkers--;
-		} else {
-			GetComponent<Image>().enabled = true;
-			GetComponentInChildren<Text>().enabled = true;
+			//set a chance for the graph to crash
+			FindObjectOfType<CrashGrapher>().CheckCrash();
 		}
 
-		Vector3 pos = rectTransform.anchoredPosition3D;
-		pos.x = 0;
-		pos.y = Mathf.Lerp(pos.y, -getUnlerpedDistance() * (numMarkers-multiplier), Time.deltaTime);
-		rectTransform.anchoredPosition3D = pos;
-	}
+		void Update () {
+			if (multiplier % multiplierBase != 0) {
+				Destroy(this.gameObject);
+				numActiveMarkers--;
+			} else {
+				GetComponent<Image>().enabled = true;
+				GetComponentInChildren<Text>().enabled = true;
+			}
 
-	public static float getUnlerpedDistance () {
-		return graphHeight/numMarkers;
-	}
+			Vector3 pos = rectTransform.anchoredPosition3D;
+			pos.x = 0;
+			pos.y = Mathf.Lerp(pos.y, -getUnlerpedDistance() * (numMarkers-multiplier), Time.deltaTime);
+			rectTransform.anchoredPosition3D = pos;
+		}
 
-	public static float getLerpedDistance () {
-		distance = Mathf.Lerp(distance, getUnlerpedDistance(), Time.deltaTime);
-		return distance;
-	}
-	
-	public static void ResetValues () {
-		numMarkers = new int();
-		numActiveMarkers = new int();
-		distance = new int();
-		multiplierBase = 1;
+		public static float getUnlerpedDistance () {
+			return graphHeight/numMarkers;
+		}
+
+		public static float getLerpedDistance () {
+			distance = Mathf.Lerp(distance, getUnlerpedDistance(), Time.deltaTime);
+			return distance;
+		}
+		
+		public static void ResetValues () {
+			numMarkers = new int();
+			numActiveMarkers = new int();
+			distance = new int();
+			multiplierBase = 1;
+		}
+
 	}
 
 }

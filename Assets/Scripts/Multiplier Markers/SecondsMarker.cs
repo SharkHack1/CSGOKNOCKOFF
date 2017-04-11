@@ -4,57 +4,61 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class SecondsMarker : NetworkBehaviour {
+namespace com.epicface.vodkabets.crash.markers {
 
-	const float graphLegnth = 900;
-	static int numMarkers;
-	static int numActiveMarkers;
-	static float distance;
-	RectTransform rectTransform;
-	int seconds;
-	static int secondsBase = 1;
+	public class SecondsMarker : NetworkBehaviour {
 
-	void Start () {
-		numMarkers++;
-		numActiveMarkers++;
-		seconds = numMarkers;
+		const float graphLegnth = 900;
+		static int numMarkers;
+		static int numActiveMarkers;
+		static float distance;
+		RectTransform rectTransform;
+		int seconds;
+		static int secondsBase = 1;
 
-		//Up the base by 10
-		if (numActiveMarkers >= 20) {
-			secondsBase *= 10;
-		}
-		GetComponent<Text>().text = seconds + "s";
-		rectTransform = GetComponent<RectTransform>();
-	}
+		void Start () {
+			numMarkers++;
+			numActiveMarkers++;
+			seconds = numMarkers;
 
-	void Update () {
-		if (seconds % secondsBase != 0) {
-			Destroy(this.gameObject);
-			numActiveMarkers--;
-		} else {
-			GetComponent<Text>().enabled = true;
+			//Up the base by 10
+			if (numActiveMarkers >= 20) {
+				secondsBase *= 10;
+			}
+			GetComponent<Text>().text = seconds + "s";
+			rectTransform = GetComponent<RectTransform>();
 		}
 
-		Vector3 pos = rectTransform.anchoredPosition3D;
-		pos.x = getDistance() * seconds;
-		pos.y = -475;
-		rectTransform.anchoredPosition3D = pos;
-	}
+		void Update () {
+			if (seconds % secondsBase != 0) {
+				Destroy(this.gameObject);
+				numActiveMarkers--;
+			} else {
+				GetComponent<Text>().enabled = true;
+			}
 
-	public static float getDistance () {
-		 distance = Mathf.Lerp(distance, getUnLerpedDistance(), Time.deltaTime);
-		 return distance;
-	}
+			Vector3 pos = rectTransform.anchoredPosition3D;
+			pos.x = getDistance() * seconds;
+			pos.y = -475;
+			rectTransform.anchoredPosition3D = pos;
+		}
 
-	public static float getUnLerpedDistance () {
-		return graphLegnth/numMarkers;
-	}
+		public static float getDistance () {
+			distance = Mathf.Lerp(distance, getUnLerpedDistance(), Time.deltaTime);
+			return distance;
+		}
 
-	public static void ResetValues () {
-		numMarkers = new int();
-		numActiveMarkers = new int();
-		distance = new int();
-		secondsBase = 1;
+		public static float getUnLerpedDistance () {
+			return graphLegnth/numMarkers;
+		}
+
+		public static void ResetValues () {
+			numMarkers = new int();
+			numActiveMarkers = new int();
+			distance = new int();
+			secondsBase = 1;
+		}
+
 	}
 
 }

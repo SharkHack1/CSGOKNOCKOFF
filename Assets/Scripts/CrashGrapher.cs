@@ -1,163 +1,168 @@
-﻿using System.Collections;
+﻿using com.epicface.vodkabets.crash.markers;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class CrashGrapher : NetworkBehaviour {
+namespace com.epicface.vodkabets.crash {
 
-	LineRenderer lr;
-	Transform arrow;
-	Text graphDisplay;
-	[SerializeField] Vector3 OriginOffset;
-	[SerializeField] float graphStartY;
-	[SyncVar] public string seed = "Ruski Spy";
-	public static float multiplier;
-	public float timeElapsed;
-	int[] crashFraction;
-	System.Random rnd;
-	[SerializeField] bool willCrash = false;
-	[SerializeField] bool crashed = false;
-	[SerializeField] float crashLimit;
+	public class CrashGrapher : NetworkBehaviour {
 
-	//Graph Formula y = (.1x)^2+1
-	//y = multiplier
-	//x = seconds elapsed
+		LineRenderer lr;
+		Transform arrow;
+		Text graphDisplay;
+		[SerializeField] Vector3 OriginOffset;
+		[SerializeField] float graphStartY;
+		[SyncVar] public string seed = "Ruski Spy";
+		public static float multiplier;
+		public float timeElapsed;
+		int[] crashFraction;
+		System.Random rnd;
+		[SerializeField] bool willCrash = false;
+		[SerializeField] bool crashed = false;
+		[SerializeField] float crashLimit;
 
-	// Use this for initialization
-	void Start () {
-		//get components
-		lr = GetComponent<LineRenderer>();
-		graphDisplay = GameObject.Find("Canvas/Graph/Multiplier").GetComponent<Text>();
-		arrow = transform.FindChild("arrow");
+		//Graph Formula y = (.1x)^2+1
+		//y = multiplier
+		//x = seconds elapsed
 
-		//set up crash vars
-		crashFraction = new int[2];
-		crashFraction[0] = 1;
-		crashFraction[1] = 5;
+		// Use this for initialization
+		void Start () {
+			//get components
+			lr = GetComponent<LineRenderer>();
+			graphDisplay = GameObject.Find("Canvas/Graph/Multiplier").GetComponent<Text>();
+			arrow = transform.FindChild("arrow");
 
-		rnd = new System.Random(seed.GetHashCode());
+			//set up crash vars
+			crashFraction = new int[2];
+			crashFraction[0] = 1;
+			crashFraction[1] = 5;
 
-		//Set-up chance to crash on startup
-		if (crashFraction[0] >= rnd.Next(1, crashFraction[1]^2)) { //square denominator for lower crash on start chance
-			StartCoroutine(Crash());
-		}
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		if (crashed) {
-			return;
-		}
-		
-		if (willCrash) {
-			//square the denomenator for more random crash values
-			if (crashFraction[0] >= rnd.Next(1, crashFraction[1]^2)) {
+			rnd = new System.Random(seed.GetHashCode());
+
+			//Set-up chance to crash on startup
+			if (crashFraction[0] >= rnd.Next(1, crashFraction[1]^2)) { //square denominator for lower crash on start chance
 				StartCoroutine(Crash());
 			}
 		}
-
-		//update time
-		timeElapsed += Time.deltaTime;
-
-		//TODO: OPTIMIZE
-		//update each graph point for scale and adding new ones
-		for (int i = 1; i < lr.numPositions; i++) {
-			if (i == lr.numPositions-1) {
-				if (timeElapsed >= lr.numPositions) {
-					//new point
-					lr.numPositions++;
-					lr.SetPosition(i, GetPointPosition(i));
-					lr.SetPosition(i+1, GetPointPosition(timeElapsed));
-				} else {
-					lr.SetPosition(i, GetPointPosition(timeElapsed));
-				}
-
-				//set the arrow position and rotation
-				Vector3 pointA = lr.GetPosition(i);
-				Vector3 pointB = lr.GetPosition(i-1);
-
-				float angle = Mathf.Atan2(pointB.y - pointA.y, pointB.x - pointA.x) * Mathf.Rad2Deg + 90f; //90f is the offset in degrees
-
-				arrow.position = pointA;
-				arrow.rotation = Quaternion.Euler(0, 0, angle);
-
-			} else {
-				lr.SetPosition(i, GetPointPosition(i));
-			}
-		}
-
-		//display multiplier
-		multiplier = Mathf.Pow(.1f*timeElapsed, 2)+1;
-		graphDisplay.text = string.Format("{0:0.00}", multiplier) + "x";
-	}
-
-	Vector3 GetPointPosition (float i) {
-		//100 pixels is one unit in world space
-		Vector3 point = Vector3.zero;
-
-		//set coords
-		point.x = i * SecondsMarker.getDistance();
-		point.y = Mathf.Pow(.1f*i, 2) * MultiplierMarker.getLerpedDistance();
-		point.z = 0;
-		point += OriginOffset*100;
-
-		//force y to be non-negative
-		point.y = Mathf.Max(point.y, graphStartY * 100);
-
-		//convert to world space
-		point /= 100;
-
-		return point;
-	}
-
-	public void CheckCrash () {
-		//handle crash stuff
-		if (MultiplierMarker.numMarkers >= 10) {
-			//handle crash stuff
-
-			//the numerator increases 1 and denominator increases 2
-			crashFraction[0]++;
-			crashFraction[1] += 2;
-
-			if (crashFraction[0] >= rnd.Next(1, crashFraction[1])) {
-				willCrash = true;
-			}
-		}
-	}
-
-	IEnumerator Crash () {
-		//change bool values
-		willCrash = true;
-		crashed = true;
-
-		//crash entries
-		BetEntryUtility.OnCrash();
-
-		//destroy multiplier spawner and seconds spawner
-		foreach (Spawner s in GameObject.Find("Canvas/Graph").GetComponentsInChildren<Spawner>()) {
-			Destroy(s.gameObject);
-		}
-
-		//hide arrow
-		arrow.gameObject.SetActive(false);
-
-		//handle rest of crash stuff
-		lr.enabled = false;
-		BetHandler.DisableBetting();
-
-		//count down until 0
-		float timeTillRoundStart = 5f;
 		
-		while (timeTillRoundStart > 0) {
-			timeTillRoundStart -= Time.deltaTime;
-			graphDisplay.text = "Crashed @ " + string.Format("{0:0.00}", multiplier) + "x\n" +
-			 string.Format("{0:0.00}", timeTillRoundStart) + "s until next round...";
-			yield return null;
+		// Update is called once per frame
+		void Update () {
+			if (crashed) {
+				return;
+			}
+			
+			if (willCrash) {
+				//square the denomenator for more random crash values
+				if (crashFraction[0] >= rnd.Next(1, crashFraction[1]^2)) {
+					StartCoroutine(Crash());
+				}
+			}
+
+			//update time
+			timeElapsed += Time.deltaTime;
+
+			//TODO: OPTIMIZE
+			//update each graph point for scale and adding new ones
+			for (int i = 1; i < lr.numPositions; i++) {
+				if (i == lr.numPositions-1) {
+					if (timeElapsed >= lr.numPositions) {
+						//new point
+						lr.numPositions++;
+						lr.SetPosition(i, GetPointPosition(i));
+						lr.SetPosition(i+1, GetPointPosition(timeElapsed));
+					} else {
+						lr.SetPosition(i, GetPointPosition(timeElapsed));
+					}
+
+					//set the arrow position and rotation
+					Vector3 pointA = lr.GetPosition(i);
+					Vector3 pointB = lr.GetPosition(i-1);
+
+					float angle = Mathf.Atan2(pointB.y - pointA.y, pointB.x - pointA.x) * Mathf.Rad2Deg + 90f; //90f is the offset in degrees
+
+					arrow.position = pointA;
+					arrow.rotation = Quaternion.Euler(0, 0, angle);
+
+				} else {
+					lr.SetPosition(i, GetPointPosition(i));
+				}
+			}
+
+			//display multiplier
+			multiplier = Mathf.Pow(.1f*timeElapsed, 2)+1;
+			graphDisplay.text = string.Format("{0:0.00}", multiplier) + "x";
 		}
 
-		//prepare for next round
-		BetHandler.ResetBetPanel();
-		Destroy(this.gameObject);
+		Vector3 GetPointPosition (float i) {
+			//100 pixels is one unit in world space
+			Vector3 point = Vector3.zero;
+
+			//set coords
+			point.x = i * SecondsMarker.getDistance();
+			point.y = Mathf.Pow(.1f*i, 2) * MultiplierMarker.getLerpedDistance();
+			point.z = 0;
+			point += OriginOffset*100;
+
+			//force y to be non-negative
+			point.y = Mathf.Max(point.y, graphStartY * 100);
+
+			//convert to world space
+			point /= 100;
+
+			return point;
+		}
+
+		public void CheckCrash () {
+			//handle crash stuff
+			if (MultiplierMarker.numMarkers >= 10) {
+				//handle crash stuff
+
+				//the numerator increases 1 and denominator increases 2
+				crashFraction[0]++;
+				crashFraction[1] += 2;
+
+				if (crashFraction[0] >= rnd.Next(1, crashFraction[1])) {
+					willCrash = true;
+				}
+			}
+		}
+
+		IEnumerator Crash () {
+			//change bool values
+			willCrash = true;
+			crashed = true;
+
+			//crash entries
+			CrashBetEntryUtility.OnCrash();
+
+			//destroy multiplier spawner and seconds spawner
+			foreach (Spawner s in GameObject.Find("Canvas/Graph").GetComponentsInChildren<Spawner>()) {
+				Destroy(s.gameObject);
+			}
+
+			//hide arrow
+			arrow.gameObject.SetActive(false);
+
+			//handle rest of crash stuff
+			lr.enabled = false;
+			CrashBetHandler.DisableBetting();
+
+			//count down until 0
+			float timeTillRoundStart = 5f;
+			
+			while (timeTillRoundStart > 0) {
+				timeTillRoundStart -= Time.deltaTime;
+				graphDisplay.text = "Crashed @ " + string.Format("{0:0.00}", multiplier) + "x\n" +
+				string.Format("{0:0.00}", timeTillRoundStart) + "s until next round...";
+				yield return null;
+			}
+
+			//prepare for next round
+			CrashBetHandler.ResetBetPanel();
+			Destroy(this.gameObject);
+		}
 	}
+
 }
